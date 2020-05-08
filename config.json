@@ -1,0 +1,8 @@
+{
+    "locations": 
+        ["Ramersdorf", "Effeld", "Aachen"],    
+    "weatherfiledir":
+        "weatherfiles",
+    "logfilepath":
+        "log/weathercrawler.log"          
+}
