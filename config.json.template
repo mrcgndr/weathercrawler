@@ -1,0 +1,10 @@
+# Template for config file.
+# to use, fill in the parameters and copy to 'config.json'
+{
+    "locations": 
+        [],    
+    "weatherfiledir":
+        "",
+    "logfilepath":
+        ""          
+}
