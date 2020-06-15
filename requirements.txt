@@ -1,6 +1,4 @@
-json
 requests
 datetime
-glob
 pandas
 flatten-dict
