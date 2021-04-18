@@ -33,12 +33,13 @@ class WeatherCrawler(object):
             try:    
                 tstamp = datetime.strptime(t['current_condition'][0]['localObsDateTime'], '%Y-%m-%d %I:%M %p')
                 tstamp_str = tstamp.strftime('%Y%m%d-%H%M')
-                filename = os.path.join(self.weatherfiledir, f'{tstamp_str}_{loc}.json')
+                filename = f'{tstamp_str}_{loc}.json'
+                filepath = os.path.join(self.weatherfiledir, filename)
             
-                with open(filename, "w") as f:
+                with open(filepath, "w") as f:
                     json.dump(t, f, indent=2)
                 with open(self.logfilepath, "a") as f:
-                    f.write(f"+ {now()} Location '{loc}': successfully saved.\n")
+                    f.write(f"+ {now()}: successfully saved {filename}.\n")
                     
             except Exception as e:
                 with open(self.logfilepath, "a") as f:
