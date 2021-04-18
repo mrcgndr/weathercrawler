@@ -131,3 +131,6 @@ dmypy.json
 # custom
 weatherfiles/
 config.json
+
+# VS code
+.vscode/
