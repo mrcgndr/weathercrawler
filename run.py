@@ -1,3 +1,5 @@
+#! .venv/bin/python
+
 import os
 import json
 from weathercrawler import WeatherCrawler
