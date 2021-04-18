@@ -2,7 +2,11 @@
 
 Automatic weather data extraction from http://wttr.in
 
-## Installation with Python 3.9
+## Installation
+
+tested with:
+  * Python 3.7.3
+  * Python 3.9.4
 
 ````
 git clone https://github.com/mrcgndr/weathercrawler.git .
