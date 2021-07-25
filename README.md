@@ -1,6 +1,6 @@
 # Weathercrawler
 
-Automatic weather data extraction from http://wttr.in
+Automatic extraction and processing framework for weather data from [wttr.in](http://wttr.in)
 
 ## Installation
 
