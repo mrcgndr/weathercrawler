@@ -41,7 +41,7 @@ def parse_weatherfile(filepath: str, location: str) -> WeatherFileConfig:
     with open(filepath, "r") as f:
         json_dict = json.load(f) 
     
-    #try:
+    try:
         current = json_dict["current_condition"][0]
         nearest = json_dict["nearest_area"][0]
         weather = [d for d in json_dict["weather"]]
@@ -83,9 +83,9 @@ def parse_weatherfile(filepath: str, location: str) -> WeatherFileConfig:
                 country = nearest["country"][0]["value"],
                 lon = float(nearest["longitude"]),
                 lat = float(nearest["latitude"]),
-                population = int(nearest["population"]),
+                population = int(nearest["population"]) if "population" in nearest.keys() else None,
                 region = nearest["region"][0]["value"],
-                weather_url = nearest["weatherUrl"][0]["value"]
+                weather_url = nearest["weatherUrl"][0]["value"] if "weatherUrl" in nearest.keys() else None
             ),
             request = RequestConfig(
                 query = json_dict["request"][0]["query"],
@@ -186,8 +186,8 @@ def parse_weatherfile(filepath: str, location: str) -> WeatherFileConfig:
 
         return w
     
-    #except Exception as e:
-    #    print(f"File {filepath} could not be parsed. Error: {e}")
+    except Exception as e:
+        print(f"File {filepath} could not be parsed. Error: {e}")
 
 class WeatherFileStack():
 
