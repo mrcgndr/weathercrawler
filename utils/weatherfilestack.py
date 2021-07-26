@@ -207,6 +207,7 @@ class WeatherFileStack():
             self.end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             self.end_date = None
+        assert self.start_date < self.end_date, "end_date is before start_date."
         self.location = location
         self.file_dir = file_dir
         self._load_files(n_workers)
@@ -229,15 +230,21 @@ class WeatherFileStack():
         return p.text(str(self) if not cycle else '...')
 
     def _filelist(self):
-        if self.start_date and self.end_date:
-            start = self.start_date
-            end = self.end_date
-        elif self.start_date:
-            start = self.start_date
-            end = datetime.now().date()
-        elif self.end_date:
-            start = datetime.strptime(os.path.basename(sorted(glob(os.path.join(self.file_dir, f"*_{self.location}.json")))[0][:8]), "%Y%m%d").date()
-            end = self.end_date
+        if (not self.start_date) and (not self.end_date):
+            globlist = [glob(os.path.join(self.file_dir, f"*_{self.location}.json"))]
+        else:
+            if self.start_date and self.end_date:
+                start = self.start_date
+                end = self.end_date
+            elif self.start_date:
+                start = self.start_date
+                end = datetime.now().date()
+            elif self.end_date:
+                start = datetime.strptime(os.path.basename(sorted(glob(os.path.join(self.file_dir, f"*_{self.location}.json")))[0])[:8], "%Y%m%d").date()
+                end = self.end_date
+            globlist = [glob(os.path.join(self.file_dir, f"{d.strftime('%Y%m%d')}*_{self.location}.json")) for d in _daterange(start, end)]
         
-        globlist = [glob(os.path.join(self.file_dir, f"{d.strftime('%Y%m%d')}*_{self.location}.json")) for d in _daterange(start, end)]
-        return sorted([l for dl in globlist for l in dl])
+        if len(globlist) > 0:
+            return sorted([l for dl in globlist for l in dl])
+        else:
+            raise ValueError(f"No WeatherFiles found for location '{self.location}' in the given time range.")
