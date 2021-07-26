@@ -2,6 +2,7 @@ dacite
 dataclassframe
 flatten-dict
 ipywidgets
+matplotlib
 p-tqdm
 pip-chill
 pylint
