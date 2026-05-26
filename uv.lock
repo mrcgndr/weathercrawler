@@ -980,11 +980,15 @@ dependencies = [
     { name = "dataclassframe" },
     { name = "flatten-dict" },
     { name = "ipywidgets" },
-    { name = "matplotlib" },
     { name = "p-tqdm" },
     { name = "pandas" },
     { name = "requests" },
     { name = "tqdm" },
+]
+
+[package.optional-dependencies]
+visualize = [
+    { name = "matplotlib" },
 ]
 
 [package.metadata]
@@ -993,12 +997,13 @@ requires-dist = [
     { name = "dataclassframe" },
     { name = "flatten-dict" },
     { name = "ipywidgets" },
-    { name = "matplotlib" },
+    { name = "matplotlib", marker = "extra == 'visualize'" },
     { name = "p-tqdm" },
     { name = "pandas" },
     { name = "requests" },
     { name = "tqdm" },
 ]
+provides-extras = ["visualize"]
 
 [[package]]
 name = "widgetsnbextension"

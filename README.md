@@ -15,6 +15,12 @@ cd weathercrawler
 uv sync
 ```
 
+If you also want plotting support from `utils.visualize`, install the optional visualization dependencies:
+
+```bash
+uv sync --extra visualize
+```
+
 ## Configuration
 
 Runtime configuration lives in `config.json`.

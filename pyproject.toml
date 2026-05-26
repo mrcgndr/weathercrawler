@@ -9,11 +9,15 @@ dependencies = [
     "dataclassframe",
     "flatten-dict",
     "ipywidgets",
-    "matplotlib",
     "p-tqdm",
     "pandas",
     "requests",
     "tqdm",
+]
+
+[project.optional-dependencies]
+visualize = [
+    "matplotlib",
 ]
 
 [project.scripts]
