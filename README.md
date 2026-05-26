@@ -67,4 +67,5 @@ test/2026/05/26/2028_Bonn.json
 
 - The crawler uses the observation timestamp returned by `wttr.in`.
 - If `localObsDateTime` is missing from the API response, the timestamp is reconstructed from `date` and `observation_time`.
+- If the API response does not contain a usable weather report timestamp, the file is not written.
 - `utils.weatherfilestack.WeatherFileStack` reads JSON files recursively and therefore works with the new directory structure.

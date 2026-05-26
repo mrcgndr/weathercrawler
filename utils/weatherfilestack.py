@@ -1,12 +1,13 @@
-import pandas as pd
 import json
 import os
 from datetime import datetime, timedelta
-from flatten_dict import flatten
 from glob import glob
-from tqdm import tqdm
-from p_tqdm import p_map
 from typing import Union
+
+import pandas as pd
+from flatten_dict import flatten
+from p_tqdm import p_map
+from tqdm import tqdm
 
 from .config import *
 
@@ -59,8 +60,18 @@ def _parse_observation_datetime(current: dict, weather: list) -> Union[datetime,
         return _strptime(current["localObsDateTime"], "%Y-%m-%d %I:%M %p", "datetime")
 
     observation_time = current.get("observation_time")
-    if observation_time and weather and "date" in weather[0]:
-        return _strptime(f"{weather[0]['date']} {observation_time}", "%Y-%m-%d %I:%M %p", "datetime")
+    if observation_time:
+        parsed_time = _strptime(observation_time, "%I:%M %p", "time")
+        forecast_date = weather[0]["date"] if weather and "date" in weather[0] else None
+        parsed_date = _strptime(forecast_date, "%Y-%m-%d", "date") if forecast_date else None
+        if parsed_time is None or parsed_date is None:
+            return None
+
+        observed_at = datetime.combine(parsed_date, parsed_time)
+        if observed_at > datetime.now():
+            return observed_at - timedelta(days=1)
+
+        return observed_at
 
     return None
 
