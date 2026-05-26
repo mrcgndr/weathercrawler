@@ -1,0 +1,25 @@
+[project]
+name = "weathercrawler"
+version = "0.1.0"
+description = "Automatic extraction and processing framework for weather data from wttr.in"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dacite",
+    "dataclassframe",
+    "flatten-dict",
+    "ipywidgets",
+    "matplotlib",
+    "p-tqdm",
+    "pandas",
+    "requests",
+    "tqdm",
+]
+
+[project.scripts]
+weathercrawler = "run:main"
+migrate-weatherfiles = "migrate_weatherfiles:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

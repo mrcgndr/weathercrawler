@@ -37,6 +37,34 @@ def _daterange(start: datetime.date, end: datetime.date) -> List[datetime.date]:
     return [start + timedelta(days=x) for x in range(0, (end-start).days)]
 
 
+def _date_from_filepath(filepath: str, root_dir: str):
+    relative = os.path.relpath(filepath, root_dir)
+    parts = relative.split(os.sep)
+
+    if len(parts) >= 4:
+        try:
+            return datetime.strptime("/".join(parts[:3]), "%Y/%m/%d").date()
+        except ValueError:
+            pass
+
+    filename = os.path.basename(filepath)
+    try:
+        return datetime.strptime(filename[:8], "%Y%m%d").date()
+    except ValueError:
+        return None
+
+
+def _parse_observation_datetime(current: dict, weather: list) -> Union[datetime, None]:
+    if "localObsDateTime" in current:
+        return _strptime(current["localObsDateTime"], "%Y-%m-%d %I:%M %p", "datetime")
+
+    observation_time = current.get("observation_time")
+    if observation_time and weather and "date" in weather[0]:
+        return _strptime(f"{weather[0]['date']} {observation_time}", "%Y-%m-%d %I:%M %p", "datetime")
+
+    return None
+
+
 def parse_weatherfile(filepath: str, location: str) -> WeatherFileConfig:
     with open(filepath, "r") as f:
         json_dict = json.load(f) 
@@ -75,7 +103,7 @@ def parse_weatherfile(filepath: str, location: str) -> WeatherFileConfig:
                     windspeed_kmh = int(current["windspeedKmph"]),
                     windspeed_mph = int(current["windspeedMiles"])
                 ),
-                obs_datetime_loc = _strptime(current["localObsDateTime"], "%Y-%m-%d %I:%M %p", "datetime"),
+                obs_datetime_loc = _parse_observation_datetime(current, weather),
                 obs_time = _strptime(current["observation_time"], "%I:%M %p", "time")
             ),
             nearest_area = NearestAreaConfig(
@@ -207,7 +235,8 @@ class WeatherFileStack():
             self.end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
         else:
             self.end_date = None
-        assert self.start_date < self.end_date, "end_date is before start_date."
+        if self.start_date and self.end_date:
+            assert self.start_date < self.end_date, "end_date is before start_date."
         self.location = location
         self.file_dir = file_dir
         self._load_files(n_workers)
@@ -230,21 +259,29 @@ class WeatherFileStack():
         return p.text(str(self) if not cycle else '...')
 
     def _filelist(self):
-        if (not self.start_date) and (not self.end_date):
-            globlist = [glob(os.path.join(self.file_dir, f"*_{self.location}.json"))]
-        else:
-            if self.start_date and self.end_date:
-                start = self.start_date
-                end = self.end_date
-            elif self.start_date:
-                start = self.start_date
-                end = datetime.now().date()
-            elif self.end_date:
-                start = datetime.strptime(os.path.basename(sorted(glob(os.path.join(self.file_dir, f"*_{self.location}.json")))[0])[:8], "%Y%m%d").date()
-                end = self.end_date
-            globlist = [glob(os.path.join(self.file_dir, f"{d.strftime('%Y%m%d')}*_{self.location}.json")) for d in _daterange(start, end)]
-        
-        if len(globlist) > 0:
-            return sorted([l for dl in globlist for l in dl])
-        else:
+        files = glob(os.path.join(self.file_dir, "**", f"*_{self.location}.json"), recursive=True)
+
+        if not files:
             raise ValueError(f"No WeatherFiles found for location '{self.location}' in the given time range.")
+
+        if (not self.start_date) and (not self.end_date):
+            return sorted(files)
+
+        dated_files = [(file, _date_from_filepath(file, self.file_dir)) for file in files]
+        dated_files = [(file, date) for file, date in dated_files if date is not None]
+
+        if self.start_date and self.end_date:
+            start = self.start_date
+            end = self.end_date
+        elif self.start_date:
+            start = self.start_date
+            end = datetime.now().date()
+        else:
+            start = min(date for _, date in dated_files)
+            end = self.end_date
+
+        selected = [file for file, date in dated_files if start <= date <= end]
+        if selected:
+            return sorted(selected)
+
+        raise ValueError(f"No WeatherFiles found for location '{self.location}' in the given time range.")

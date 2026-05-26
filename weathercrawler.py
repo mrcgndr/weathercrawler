@@ -8,6 +8,36 @@ def now():
     return datetime.now().strftime('%Y-%m-%d-%H%M%S')
 
 
+def _get_observation_datetime(payload):
+    current = payload['current_condition'][0]
+
+    if 'localObsDateTime' in current:
+        return datetime.strptime(current['localObsDateTime'], '%Y-%m-%d %I:%M %p')
+
+    observation_time = current.get('observation_time')
+    weather = payload.get('weather', [])
+    if observation_time and weather and weather[0].get('date'):
+        return datetime.strptime(
+            f"{weather[0]['date']} {observation_time}",
+            '%Y-%m-%d %I:%M %p'
+        )
+
+    return datetime.now()
+
+
+def _get_output_path(base_dir, location, timestamp):
+    date_dir = os.path.join(
+        base_dir,
+        timestamp.strftime('%Y'),
+        timestamp.strftime('%m'),
+        timestamp.strftime('%d'),
+    )
+    os.makedirs(date_dir, exist_ok=True)
+
+    filename = f"{timestamp.strftime('%H%M')}_{location}.json"
+    return os.path.join(date_dir, filename), filename
+
+
 class WeatherCrawler(object):
 
     def __init__(self, locations, weatherfiledir, logfilepath):
@@ -31,10 +61,8 @@ class WeatherCrawler(object):
                 continue
                 
             try:    
-                tstamp = datetime.strptime(t['current_condition'][0]['localObsDateTime'], '%Y-%m-%d %I:%M %p')
-                tstamp_str = tstamp.strftime('%Y%m%d-%H%M')
-                filename = f'{tstamp_str}_{loc}.json'
-                filepath = os.path.join(self.weatherfiledir, filename)
+                tstamp = _get_observation_datetime(t)
+                filepath, filename = _get_output_path(self.weatherfiledir, loc, tstamp)
             
                 with open(filepath, "w") as f:
                     json.dump(t, f, indent=2)
